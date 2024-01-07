@@ -38,11 +38,15 @@ jobs:
 
       - name: Move BuildData Win
         if: matrix.os == 'windows-latest'
-        run: mv "./dist/electron/Packaged/gha ${{ steps.get_version.outputs.version }}.msi" ${{ matrix.os }}
+        run: mv "${{GITHUB_WORKSPACE}}/dist/electron/Packaged/gha ${{ steps.get_version.outputs.version }}.msi" ${{ matrix.os }}
+
+      - name: ls
+        if: matrix.os == 'macos-latest'
+        run: ls -a ${{GITHUB_WORKSPACE}}/dist/electron/Packaged/
 
       - name: Move BuildData Mac
         if: matrix.os == 'macos-latest'
-        run: mv "./dist/electron/Packaged/gha-${{ steps.get_version.outputs.version }}.pkg"  ${{ matrix.os }}
+        run: mv "${{GITHUB_WORKSPACE}}/dist/electron/Packaged/gha-${{ steps.get_version.outputs.version }}.pkg" ${{ matrix.os }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
