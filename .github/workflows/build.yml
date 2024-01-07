@@ -2,30 +2,42 @@ name: Quasar Electron Build and Release
 
 on:
   pull_request:
-    branches: [ main, dev ]
+    branches: [main]
+    types: [closed]
 
 jobs:
   build-capacitor:
+    if: github.event.pull_request.merged == true
+
     runs-on: ${{ matrix.os-versions }}
-    
+
     defaults:
       run:
         shell: bash
 
     strategy:
       matrix:
-        os-versions: [windows-latest, macos-latest]
+        os-versions: [windows-latest]
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Hello world action step
+        id: testaction
+        uses: txkodo/MyTestAction@v1
+
+      # Use the output from the `hello` step
+      - name: Get the output time
+        run: echo "THE VERSION IS ${{ steps.testaction.outputs.version }}"
+
       - name: Setup NodeJS Environment 18
         uses: actions/setup-node@v2
         with:
-            node-version: 18
+          node-version: 18
       - run: yarn install
       - run: yarn build
-      - run: zip -r  ./electron-${{ github.run_number }}.zip ./dist/electron/* 
-    
+      - run: zip -r  ./electron-${{ github.run_number }}.zip ./dist/electron/*
+
       - name: Create a Release
         id: create_release
         uses: actions/create-release@v1
@@ -37,7 +49,7 @@ jobs:
           body: Automated Electron Deployment
           draft: false
           prerelease: false
-          
+
       - name: Upload a Release Asset
         id: upload_release_asset
         uses: actions/upload-release-asset@v1.0.2
