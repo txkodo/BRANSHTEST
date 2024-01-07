@@ -17,6 +17,9 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest]
 
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -33,15 +36,13 @@ jobs:
         id: get_version
         uses: txkodo/MyTestAction@v1
 
-      - run: echo "VERSION=${{steps.get_version.outputs.version}}" >> $GITHUB_ENV
-
       - name: Move BuildData Win
         if: matrix.os == 'windows-latest'
-        run: mv "./dist/electron/Packaged/gha ${{ env.VERSION }}.msi" ${{ matrix.os }}
+        run: mv "./dist/electron/Packaged/gha ${{ steps.get_version.outputs.version }}.msi" ${{ matrix.os }}
 
       - name: Move BuildData Mac
         if: matrix.os == 'macos-latest'
-        run: mv "./dist/electron/Packaged/gha-${{ env.VERSION }}.pkg"  ${{ matrix.os }}
+        run: mv "./dist/electron/Packaged/gha-${{ steps.get_version.outputs.version }}.pkg"  ${{ matrix.os }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
@@ -54,6 +55,10 @@ jobs:
     needs: build-electron
     runs-on: ubuntu-latest
 
+    outputs:
+      version: ${{ needs.build-electron.outputs.version }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+
     steps:
       - name: Create a Release
         id: create_release
@@ -61,13 +66,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.VERSION }}
+          tag_name: ${{ needs.build-electron.outputs.version }}
           release_name: ${{ github.event.pull_request.title }}
           body: Automated Electron Deployment
           draft: false
           prerelease: false
-
-      - run: echo "UPLOAD_URL=${{steps.create_release.outputs.upload_url}}" >> $GITHUB_ENV
 
   upload-build:
     needs: create-release
@@ -94,7 +97,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ env.UPLOAD_URL }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: ${{ matrix.os }}
-          asset_name: gha-${{ env.VERSION }}.${{ matrix.ext }}
+          asset_name: gha-${{ needs.create-release.outputs.version }}.${{ matrix.ext }}
           asset_content_type: appliction/${{ matrix.ext }}
