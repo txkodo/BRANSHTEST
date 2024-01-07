@@ -1,9 +1,9 @@
 name: Quasar Electron Build and Release
 
-on:
-  pull_request:
-    branches: [main]
-    types: [closed]
+# on:
+#   pull_request:
+#     branches: [main]
+#     types: [closed]
 
 jobs:
   build-electron:
