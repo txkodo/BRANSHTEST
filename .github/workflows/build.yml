@@ -54,6 +54,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v2
+
       - name: Get App Version
         id: get_version
         uses: txkodo/MyTestAction@v1
