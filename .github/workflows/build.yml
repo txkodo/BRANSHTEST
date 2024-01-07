@@ -2,7 +2,7 @@ name: Quasar Electron Build and Release
 
 on:
   pull_request:
-    branches: [ master, dev ]
+    branches: [ main, dev ]
 
 jobs:
   build-capacitor:
