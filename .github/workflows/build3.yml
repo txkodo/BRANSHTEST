@@ -64,7 +64,7 @@ jobs:
 
       - name: Move BuildData Mac
         if: matrix.os == 'macos-latest'
-        run: mv "./dist/electron/Packaged/gha-{{ inputs.version }}.pkg"  ${{ matrix.os }}
+        run: mv "./dist/electron/Packaged/gha-${{ inputs.version }}.pkg" ${{ matrix.os }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
