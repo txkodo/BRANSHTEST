@@ -10,9 +10,12 @@ on:
 
 jobs:
   create-commit:
+    runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
 
+      - run: git fetch
       - run: git checkout dev
 
       - uses: actions/github-script@v7
@@ -20,8 +23,10 @@ jobs:
         with:
           script: |
             const script = require('./actions/build/update_version.js')
-            await script({version:${{ inputs.version }} })
+            await script({version:"${{ inputs.version }}" })
       - run: |
+          git config --local user.name github-actions[bot]
+          git config --local user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add .
           git commit -m "🔖 ${{ inputs.version }}"
           git push
@@ -30,6 +35,8 @@ jobs:
           git push
 
   build-electron:
+    needs: create-commit
+
     defaults:
       run:
         shell: bash
