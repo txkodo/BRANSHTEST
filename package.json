@@ -11,6 +11,12 @@
     "dev": "quasar dev -m electron",
     "build": "quasar build -m electron"
   },
+  "build": {
+    "appId": "com.txkodo.gha",
+    "files": [
+      "dist/**/*"
+    ]
+  },
   "dependencies": {
     "@quasar/extras": "^1.16.4",
     "electron": "^28.1.1",
@@ -27,6 +33,7 @@
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
     "autoprefixer": "^10.4.2",
+    "electron-packager": "^17.1.1",
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^9.0.0",
