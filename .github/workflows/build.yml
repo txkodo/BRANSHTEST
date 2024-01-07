@@ -33,6 +33,31 @@ jobs:
         id: get_version
         uses: txkodo/MyTestAction@v1
 
+      - name: Upload Artifact
+        if: matrix.os-versions == 'windows-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: win-${{ steps.get_version.outputs.version }}
+          path: ./dist/electron/Packaged/gha ${{steps.get_version.outputs.version}}.msi
+          retention-days: 1
+
+      - name: Upload Artifact
+        if: matrix.os-versions == 'macos-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: mac-${{ steps.get_version.outputs.version }}
+          path: ./dist/electron/Packaged/gha-${{steps.get_version.outputs.version}}.pkg
+          retention-days: 1
+
+  create-release:
+    needs: build-capacitor
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get App Version
+        id: get_version
+        uses: txkodo/MyTestAction@v1
+
       - name: Create a Release
         id: create_release
         uses: actions/create-release@v1
@@ -45,26 +70,34 @@ jobs:
           draft: false
           prerelease: false
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: win-${{ steps.get_version.outputs.version }}
+          path: win.msi
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: mac-${{ steps.get_version.outputs.version }}
+          path: mac.pkg
+
       - name: Upload a Release Asset (Windows)
-        if: matrix.os-versions == 'windows-latest'
         id: upload_release_asset_win
         uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/electron/Packaged/gha ${{steps.get_version.outputs.version}}.msi
+          asset_path: win.msi
           asset_name: gha-${{steps.get_version.outputs.version}}.msi
           asset_content_type: appliction/msi
 
       - name: Upload a Release Asset (Mac)
-        if: matrix.os-versions == 'macos-latest'
         id: upload_release_asset_mac
         uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/electron/Packaged/gha-${{steps.get_version.outputs.version}}.pkg
+          asset_path: mac.pkg
           asset_name: gha-${{steps.get_version.outputs.version}}.pkg
           asset_content_type: appliction/pkg
