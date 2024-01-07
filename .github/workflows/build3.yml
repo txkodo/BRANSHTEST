@@ -55,8 +55,11 @@ jobs:
         with:
           node-version: 18
           cache: 'yarn'
-      - run: yarn install
-      - run: yarn build
+
+      - run: |
+          git pull
+          yarn install
+          yarn build
 
       - name: ls
         if: matrix.os == 'macos-latest'
