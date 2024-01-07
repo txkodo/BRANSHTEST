@@ -6,7 +6,7 @@ on:
     types: [closed]
 
 jobs:
-  build-capacitor:
+  build-electron:
     if: github.event.pull_request.merged == true
 
     defaults:
@@ -15,9 +15,9 @@ jobs:
 
     strategy:
       matrix:
-        os-versions: [macos-latest, windows-latest]
+        os: [macos-latest, windows-latest]
 
-    runs-on: ${{ matrix.os-versions }}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
@@ -33,24 +33,25 @@ jobs:
         id: get_version
         uses: txkodo/MyTestAction@v1
 
-      - name: Upload Artifact
-        if: matrix.os-versions == 'windows-latest'
-        uses: actions/upload-artifact@v3
-        with:
-          name: win
-          path: ./dist/electron/Packaged/gha ${{steps.get_version.outputs.version}}.msi
-          retention-days: 1
+      - run: echo "VERSION=${{steps.get_version.outputs.version}}" >> $GITHUB_ENV
+
+      - name: Move BuildData Win
+        if: matrix.os == 'windows-latest'
+        run: mv ./dist/electron/Packaged/gha ${{ env.VERSION }}.msi ${{ matrix.os }}
+
+      - name: Move BuildData Mac
+        if: matrix.os == 'macos-latest'
+        run: mv ./dist/electron/Packaged/gha-${{ env.VERSION }}.pkg  ${{ matrix.os }}
 
       - name: Upload Artifact
-        if: matrix.os-versions == 'macos-latest'
         uses: actions/upload-artifact@v3
         with:
-          name: mac
-          path: ./dist/electron/Packaged/gha-${{steps.get_version.outputs.version}}.pkg
+          name: ${{ matrix.os }}
+          path: ${{ matrix.os }}
           retention-days: 1
 
   create-release:
-    needs: build-capacitor
+    needs: build-electron
     runs-on: ubuntu-latest
 
     steps:
@@ -72,32 +73,27 @@ jobs:
           draft: false
           prerelease: false
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: win
+  upload-build:
+    needs: create-release
+    runs-on: ubuntu-latest
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: mac
+    strategy:
+      matrix:
+        builds: [{ os: macos-latest, ext:pkg }, { os: windows-latest, ext:msi }]
 
-      - name: Upload a Release Asset (Windows)
-        id: upload_release_asset_win
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.builds.os }}
+
+      - name: Upload a Release Asset
+        id: upload_release_asset
         uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: win.msi
-          asset_name: gha-${{steps.get_version.outputs.version}}.msi
-          asset_content_type: appliction/msi
-
-      - name: Upload a Release Asset (Mac)
-        id: upload_release_asset_mac
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mac.pkg
-          asset_name: gha-${{steps.get_version.outputs.version}}.pkg
-          asset_content_type: appliction/pkg
+          asset_path: ${{ matrix.builds.os }}
+          asset_name: gha-${{ env.VERSION }}.${{ matrix.builds.ext }}
+          asset_content_type: appliction/${{ matrix.builds.ext }}
