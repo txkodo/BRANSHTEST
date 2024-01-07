@@ -37,11 +37,11 @@ jobs:
 
       - name: Move BuildData Win
         if: matrix.os == 'windows-latest'
-        run: mv ./dist/electron/Packaged/gha ${{ env.VERSION }}.msi ${{ matrix.os }}
+        run: mv "./dist/electron/Packaged/gha ${{ env.VERSION }}.msi" ${{ matrix.os }}
 
       - name: Move BuildData Mac
         if: matrix.os == 'macos-latest'
-        run: mv ./dist/electron/Packaged/gha-${{ env.VERSION }}.pkg  ${{ matrix.os }}
+        run: mv "./dist/electron/Packaged/gha-${{ env.VERSION }}.pkg"  ${{ matrix.os }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
@@ -55,23 +55,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Get App Version
-        id: get_version
-        uses: txkodo/MyTestAction@v1
-
       - name: Create a Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          release_name: Release v${{ steps.get_version.outputs.version }}
+          tag_name: ${{ env.VERSION }}
+          release_name: ${{ github.event.pull_request.title }}
           body: Automated Electron Deployment
           draft: false
           prerelease: false
+
+      - run: echo "UPLOAD_URL=${{steps.create_release.outputs.upload_url}}" >> $GITHUB_ENV
 
   upload-build:
     needs: create-release
@@ -98,7 +94,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ UPLOAD_URL }}
           asset_path: ${{ matrix.os }}
           asset_name: gha-${{ env.VERSION }}.${{ matrix.ext }}
           asset_content_type: appliction/${{ matrix.ext }}
