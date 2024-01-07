@@ -37,7 +37,7 @@ jobs:
         if: matrix.os-versions == 'windows-latest'
         uses: actions/upload-artifact@v3
         with:
-          name: win-${{ steps.get_version.outputs.version }}
+          name: win
           path: ./dist/electron/Packaged/gha ${{steps.get_version.outputs.version}}.msi
           retention-days: 1
 
@@ -45,7 +45,7 @@ jobs:
         if: matrix.os-versions == 'macos-latest'
         uses: actions/upload-artifact@v3
         with:
-          name: mac-${{ steps.get_version.outputs.version }}
+          name: mac
           path: ./dist/electron/Packaged/gha-${{steps.get_version.outputs.version}}.pkg
           retention-days: 1
 
@@ -72,15 +72,13 @@ jobs:
           draft: false
           prerelease: false
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
-          name: win-${{ steps.get_version.outputs.version }}
-          path: win.msi
+          name: win
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
-          name: mac-${{ steps.get_version.outputs.version }}
-          path: mac.pkg
+          name: mac
 
       - name: Upload a Release Asset (Windows)
         id: upload_release_asset_win
