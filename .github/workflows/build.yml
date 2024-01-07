@@ -79,16 +79,18 @@ jobs:
 
     strategy:
       matrix:
-        builds: [
-          { os: "macos-latest", ext:"pkg" },
-          { os: "windows-latest", ext:"msi" }
-        ]
+        os: [macos-latest, windows-latest]
+        include:
+          - os: macos-latest
+            ext: pkg
+          - os: windows-latest
+            ext: msi
 
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ matrix.builds.os }}
+          name: ${{ matrix.os }}
 
       - name: Upload a Release Asset
         id: upload_release_asset
@@ -97,6 +99,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ matrix.builds.os }}
-          asset_name: gha-${{ env.VERSION }}.${{ matrix.builds.ext }}
-          asset_content_type: appliction/${{ matrix.builds.ext }}
+          asset_path: ${{ matrix.os }}
+          asset_name: gha-${{ env.VERSION }}.${{ matrix.ext }}
+          asset_content_type: appliction/${{ matrix.ext }}
