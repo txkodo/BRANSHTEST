@@ -66,10 +66,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ needs.build-electron.outputs.version }}
-          release_name: ${{ github.event.pull_request.title }}
+          tag: ${{ needs.build-electron.outputs.version }}
+          name: ${{ github.event.pull_request.title }}
+          version: ${{ needs.build-electron.outputs.version }}
           body: Automated Electron Deployment
-          draft: false
+          publish: true
           prerelease: false
 
   upload-build:
