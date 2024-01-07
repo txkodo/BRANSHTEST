@@ -9,22 +9,18 @@ jobs:
   build-capacitor:
     if: github.event.pull_request.merged == true
 
-    runs-on: ${{ matrix.os-versions }}
-
     defaults:
       run:
         shell: bash
 
     strategy:
       matrix:
-        os-versions: [windows-latest]
+        os-versions: [mac-latest, windows-latest]
+
+    runs-on: ${{ matrix.os-versions }}
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Hello world action step
-        id: get_version
-        uses: txkodo/MyTestAction@v1
 
       - name: Setup NodeJS Environment 18
         uses: actions/setup-node@v2
@@ -32,6 +28,10 @@ jobs:
           node-version: 18
       - run: yarn install
       - run: yarn build
+
+      - name: Get App Version
+        id: get_version
+        uses: txkodo/MyTestAction@v1.1
 
       - name: Create a Release
         id: create_release
@@ -45,7 +45,8 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload a Release Asset
+      - name: Upload a Release Asset (Windows)
+        if: ${{ matrix.os-versions }} == windows-latest
         id: upload_release_asset
         uses: actions/upload-release-asset@v1.0.2
         env:
@@ -55,3 +56,15 @@ jobs:
           asset_path: ./dist/electron/Packaged/gha ${{steps.get_version.outputs.version}}.msi
           asset_name: gha-${{steps.get_version.outputs.version}}.msi
           asset_content_type: appliction/msi
+
+      # - name: Upload a Release Asset (Mac)
+      #   if: ${{ matrix.os-versions }} == mac-latest
+      #   id: upload_release_asset
+      #   uses: actions/upload-release-asset@v1.0.2
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./dist/electron/Packaged/gha ${{steps.get_version.outputs.version}}.msi
+      #     asset_name: gha-${{steps.get_version.outputs.version}}.msi
+      #     asset_content_type: appliction/msi
