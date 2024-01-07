@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        os-versions: [mac-latest, windows-latest]
+        os-versions: [macos-latest, windows-latest]
 
     runs-on: ${{ matrix.os-versions }}
 
