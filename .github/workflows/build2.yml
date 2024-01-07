@@ -10,6 +10,8 @@ on:
 
 jobs:
   create-commit:
+    runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
 
@@ -30,6 +32,8 @@ jobs:
           git push
 
   build-electron:
+    needs: create-commit
+
     defaults:
       run:
         shell: bash
