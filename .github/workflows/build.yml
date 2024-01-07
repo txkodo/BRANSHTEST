@@ -69,7 +69,6 @@ jobs:
           tag: ${{ needs.build-electron.outputs.version }}
           name: ${{ github.event.pull_request.title }}
           version: ${{ needs.build-electron.outputs.version }}
-          body: Automated Electron Deployment
           publish: true
           prerelease: false
 

@@ -15,3 +15,8 @@ categories:
     label: 'documentation'
   - title: '✅ Tests'
     label: 'test'
+
+template: |
+  ## What’s Changed
+
+  $CHANGES
