@@ -23,12 +23,8 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Hello world action step
-        id: testaction
+        id: get_version
         uses: txkodo/MyTestAction@v1
-
-      # Use the output from the `hello` step
-      - name: Get the output time
-        run: echo "THE VERSION IS ${{ steps.testaction.outputs.version }}"
 
       - name: Setup NodeJS Environment 18
         uses: actions/setup-node@v2
@@ -36,7 +32,8 @@ jobs:
           node-version: 18
       - run: yarn install
       - run: yarn build
-      - run: zip -r  ./electron-${{ github.run_number }}.zip ./dist/electron/*
+
+      - run: zip -r  ./electron-${{steps.testaction.outputs.version}}.zip ./dist/electron/*
 
       - name: Create a Release
         id: create_release
@@ -57,6 +54,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./electron-${{ github.run_number }}.zip
-          asset_name: electron-${{ github.run_number }}.zip
-          asset_content_type: appliction/zip
+          asset_path: ./dist/electron/Packaged/gha ${{steps.get_version.outputs.version}}.msi
+          asset_name: gha-${{steps.get_version.outputs.version}}.msi
+          asset_content_type: appliction/msi
