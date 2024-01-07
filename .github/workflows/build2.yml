@@ -23,7 +23,7 @@ jobs:
         with:
           script: |
             const script = require('./actions/build/update_version.js')
-            await script({version:${{ inputs.version }} })
+            await script({version:"${{ inputs.version }}" })
       - run: |
           git add .
           git commit -m "🔖 ${{ inputs.version }}"
