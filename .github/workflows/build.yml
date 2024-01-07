@@ -46,7 +46,7 @@ jobs:
           prerelease: false
 
       - name: Upload a Release Asset (Windows)
-        if: ${{ matrix.os-versions }} == windows-latest
+        if: matrix.os-versions == 'windows-latest'
         id: upload_release_asset_win
         uses: actions/upload-release-asset@v1.0.2
         env:
@@ -58,7 +58,7 @@ jobs:
           asset_content_type: appliction/msi
 
       - name: Upload a Release Asset (Mac)
-        if: ${{ matrix.os-versions }} == mac-latest
+        if: matrix.os-versions == 'macos-latest'
         id: upload_release_asset_mac
         uses: actions/upload-release-asset@v1.0.2
         env:
