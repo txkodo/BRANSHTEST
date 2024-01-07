@@ -79,7 +79,10 @@ jobs:
 
     strategy:
       matrix:
-        builds: [{ os: macos-latest, ext:pkg }, { os: windows-latest, ext:msi }]
+        builds: [
+          { os: "macos-latest", ext:"pkg" },
+          { os: "windows-latest", ext:"msi" }
+        ]
 
     steps:
       - name: Download Artifact
