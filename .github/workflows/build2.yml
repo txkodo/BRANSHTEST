@@ -1,0 +1,116 @@
+name: Quasar Electron Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version Name e.g. 1.0.0'
+        required: true
+        type: string
+
+jobs:
+  create-commit:
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: git checkout dev
+
+      - uses: actions/github-script@v7
+        id: change_name
+        with:
+          script: |
+            const script = require('./actions/build/update_version.js')
+            await script({version:${{ inputs.version }} })
+      - run: |
+          git add .
+          git commit -m "🔖 ${{ inputs.version }}"
+          git push
+          git checkout main
+          git merge dev
+          git push
+
+  build-electron:
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup NodeJS Environment 18
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - run: yarn install
+      - run: yarn build
+
+      - name: Move BuildData Win
+        if: matrix.os == 'windows-latest'
+        run: mv "./dist/electron/Packaged/gha ${{ inputs.version }}.msi" ${{ matrix.os }}
+
+      - name: Move BuildData Mac
+        if: matrix.os == 'macos-latest'
+        run: mv "./dist/electron/Packaged/gha-{{ inputs.version }}.pkg"  ${{ matrix.os }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}
+          path: ${{ matrix.os }}
+          retention-days: 1
+
+  create-release:
+    needs: build-electron
+    runs-on: ubuntu-latest
+
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+
+    steps:
+      - name: Create a Release
+        id: create_release
+        uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: ${{ inputs.version }}
+          name: ${{ github.event.pull_request.title }}
+          version: ${{ inputs.version }}
+          publish: true
+          prerelease: false
+
+  upload-build:
+    needs: create-release
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+        include:
+          - os: macos-latest
+            ext: pkg
+          - os: windows-latest
+            ext: msi
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.os }}
+
+      - name: Upload a Release Asset
+        id: upload_release_asset
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ matrix.os }}
+          asset_name: gha-${{ inputs.version }}.${{ matrix.ext }}
+          asset_content_type: appliction/${{ matrix.ext }}
