@@ -31,8 +31,7 @@ jobs:
           git add .
           git commit -m "🔖 Release ${{ steps.get_version.outputs.next-version }}"
           git push
-          git checkout main
-          git merge dev
+          git checkout -b release/v${{ steps.get_version.outputs.next-version }}"
           git push
 
     outputs:
@@ -106,10 +105,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag: ${{ needs.create-commit.outputs.next-version }}
+          tag: v${{ needs.create-commit.outputs.next-version }}
           name: ${{ github.event.pull_request.title }}
-          version: ${{ needs.create-commit.outputs.next-version }}
-          publish: true
+          version: v${{ needs.create-commit.outputs.next-version }}
+          publish: false
           prerelease: false
 
   upload-build:
