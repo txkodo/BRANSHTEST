@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
     types: [closed]
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   create-commit:
