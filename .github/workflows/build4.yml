@@ -1,5 +1,12 @@
 name: Build4
 
+permissions:
+  contents: write
+
+concurrency:
+  group: 'build'
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
     inputs:
@@ -139,5 +146,28 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: ${{ matrix.os }}
-          asset_name: gha-${{ needs.create-commit.outputs.next-version }}.${{ matrix.ext }}
+          asset_name: ServerStarter-v${{ needs.create-commit.outputs.next-version }}.${{ matrix.ext }}
           asset_content_type: appliction/${{ matrix.ext }}
+
+  notify:
+    needs:
+      - create-commit
+      - upload-build
+
+    runs-on: ubuntu-latest
+
+    if: always()
+
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v1
+      - name: notify via discord
+        uses: sarisia/actions-status-discord@v1
+        with:
+          title: Draft Release v${{ needs.create-commit.outputs.next-version }}
+          description: |
+            Click [here](https://github.com/${{ github.repository }}/releases) to open releases!
+          url: 'https://github.com/${{ github.repository }}/releases'
+          nocontext: true
+          username: GitHub Actions
+          webhook: ${{ secrets.DISCORD_WEBHOOK_BUILD }}
+          status: ${{ env.WORKFLOW_CONCLUSION }}
