@@ -35,9 +35,9 @@ jobs:
           git merge dev
           git push
 
-      - outputs:
-        current-version: ${{steps.get_version.outputs.current-version }}
-        next-version: ${{steps.get_version.outputs.next-version }}
+    outputs:
+      current-version: ${{steps.get_version.outputs.current-version }}
+      next-version: ${{steps.get_version.outputs.next-version }}
 
   build-electron:
     needs: create-commit
