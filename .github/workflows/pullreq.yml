@@ -1,0 +1,19 @@
+name: AutoAssign
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - run: 'echo ${{github.event.actor.login}}'
+      - name: 'Auto-assign PR'
+        uses: pozil/auto-assign-issue@v1
+        with:
+          repo-token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
+          assignees: ${{github.event.actor.login}}
+          numOfAssignee: 1
