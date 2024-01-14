@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        description: 'Select release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: txkodo/MyTestAction@v2
+        id: get_version
+        with:
+          update-json: true
+          release-type: ${{inputs.type}}
+
+      - run: |
+          echo ${{steps.get_version.outputs.current-version}}
+          echo ${{steps.get_version.outputs.next-version}}
+
+    outputs:
+      version: ${{steps.get_version.outputs.next-version}}
+
+  log:
+    needs:
+      get-version
+
+    steps:
+      - run: |
+          echo vv${{needs.get-version.outputs.version}}vv

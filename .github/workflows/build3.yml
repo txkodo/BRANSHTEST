@@ -3,11 +3,15 @@ name: Build
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version Name e.g. 1.0.0'
+      type:
+        description: 'Select release type'
         required: true
-        type: string
-
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 jobs:
   create-commit:
     runs-on: ubuntu-latest
@@ -23,7 +27,7 @@ jobs:
         with:
           script: |
             const script = require('./actions/build/update_version.js')
-            await script({version:"${{ inputs.version }}" })
+            await script({release_type:"${{ inputs.type }}" })
       - run: |
           git config --local user.name github-actions[bot]
           git config --local user.email 41898282+github-actions[bot]@users.noreply.github.com
