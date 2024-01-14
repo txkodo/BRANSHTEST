@@ -31,9 +31,8 @@ jobs:
           git add .
           git commit -m "🔖 Release ${{ steps.get_version.outputs.next-version }}"
           git push
-          git checkout -b release/v${{ steps.get_version.outputs.next-version }}"
-          git push
-
+          git checkout -b release/v${{ steps.get_version.outputs.next-version }}
+          git push -u origin release/v${{ steps.get_version.outputs.next-version }}
     outputs:
       current-version: ${{steps.get_version.outputs.current-version }}
       next-version: ${{steps.get_version.outputs.next-version }}
